@@ -7,13 +7,15 @@ class Signinpage extends StatefulWidget {
   const Signinpage({super.key});
 
   @override
-  State<Signinpage> createState() => _HomepageState();
+  State<Signinpage> createState() => _SigninpageState();
 }
 
-class _HomepageState extends State<Signinpage> {
+class _SigninpageState extends State<Signinpage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
   bool _isLoading = false;
+  bool _isPasswordVisible = false;
 
   @override
   void dispose() {
@@ -34,16 +36,18 @@ class _HomepageState extends State<Signinpage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Login Successful")));
+
       _emailController.clear();
       _passwordController.clear();
-      Navigator.push(
+
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid email or password')),
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -65,25 +69,28 @@ class _HomepageState extends State<Signinpage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 20),
               const Text(
                 'LOG IN',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
-              _buildTextField(_emailController, "Email"),
-              const SizedBox(height: 10),
+              _buildTextField(
+                _emailController,
+                "Email",
+                keyboardType: TextInputType.emailAddress,
+              ),
+
+              const SizedBox(height: 12),
 
               _buildTextField(
                 _passwordController,
                 "Password",
                 isPassword: true,
               ),
-              const SizedBox(height: 5),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
               _isLoading
                   ? const CircularProgressIndicator()
@@ -106,7 +113,7 @@ class _HomepageState extends State<Signinpage> {
                       ),
                     ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 18),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -135,6 +142,7 @@ class _HomepageState extends State<Signinpage> {
     TextEditingController controller,
     String label, {
     bool isPassword = false,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -145,10 +153,25 @@ class _HomepageState extends State<Signinpage> {
         padding: const EdgeInsets.only(left: 20.0),
         child: TextField(
           controller: controller,
-          obscureText: isPassword,
+          obscureText: isPassword ? !_isPasswordVisible : false,
+          keyboardType: keyboardType,
           decoration: InputDecoration(
             border: InputBorder.none,
             labelText: label,
+            suffixIcon: isPassword
+                ? IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  )
+                : null,
           ),
         ),
       ),
